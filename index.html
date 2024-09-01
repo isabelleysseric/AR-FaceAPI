@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Application</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black; /* Fond noir pour la page */
+            color: white; /* Texte en blanc pour contraste */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Hauteur complète de la fenêtre */
+            overflow: hidden; /* Évite les barres de défilement */
+            position: relative; /* Assure le positionnement correct des éléments enfants */
+        }
+        #webcamContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background-color: #d3d3d3; /* Fond gris clair pour le conteneur de la webcam */
+            border: 2px solid #888; /* Bordure pour délimiter le conteneur */
+            border-radius: 10px; /* Coins arrondis pour une meilleure apparence */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Ombre portée pour un effet de profondeur */
+        }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Assure que le vidéo remplit le conteneur */
+            display: block; /* Assure que le conteneur n'a pas de marges ou de paddings par défaut */
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Permet d'interagir avec le contenu sous-jacent */
+        }
+        .controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .controls button {
+            background-color: #444;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .controls button:hover {
+            background-color: #666;
+        }
+        #error-message {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: red;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none; /* Caché par défaut */
+        }
+    </style>
+</head>
+<body>
+<div id="webcamContainer">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="overlay" class="overlay"></canvas>
+    <div id="error-message">Face detection failed. Please try again.</div>
+    <div class="controls">
+        <button id="detectFace">Detect Face</button>
+        <button id="addGlasses">Add Glasses</button>
+        <button id="resetView">Reset View</button> <!-- Nouveau bouton pour réinitialiser -->
+    </div>
+</div>
+
+<!-- Include face-api.js -->
+<script defer src="https://unpkg.com/face-api.js"></script>
+
+<script>
+    const video = document.getElementById('video');
+    const overlay = document.getElementById('overlay');
+    const detectFaceButton = document.getElementById('detectFace');
+    const addGlassesButton = document.getElementById('addGlasses');
+    const resetViewButton = document.getElementById('resetView');
+    const errorMessage = document.getElementById('error-message');
+
+    let canvas;
+    let ctx;
+    let glassesAdded = false;
+    let detecting = false;
+
+    async function startVideo() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                video.play();
+                startCanvas();
+            };
+        } catch (err) {
+            console.error('Error accessing webcam:', err);
+            showError('Error accessing webcam. Please check your camera settings.');
+
+        }
+    }
+
+    function startCanvas() {
+        canvas = faceapi.createCanvasFromMedia(video);
+        document.getElementById('webcamContainer').append(canvas);
+        const displaySize = { width: video.width, height: video.height };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        ctx = canvas.getContext('2d');
+    }
+
+    async function detectFaces() {
+        detecting = true;
+        console.log('Detect Face button clicked');
+
+        const displaySize = { width: video.width, height: video.height };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        // La détection se fait ici
+        setInterval(async () => {
+            if (detecting) {
+                try {
+                    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Dessiner les rectangles rouges autour des visages détectés
+                    faceapi.draw.drawDetections(canvas, resizedDetections);
+
+                    // Dessiner les repères faciaux avec des points rouges
+                    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+
+                    // Ajouter des lunettes si activé
+                    if (glassesAdded) {
+                        addGlassesToCanvas(resizedDetections);
+                    }
+
+                    // Masquer le message d'erreur en cas de détection réussie
+                    hideError();
+                } catch (err) {
+                    console.error('Error detecting faces:', err);
+                    showError('Face detection failed. Please try again.');
+                }
+            }
+        }, 100);
+    }
+
+    // Fonction pour ajouter des lunettes virtuelles
+    function addGlasses() {
+        console.log('Add Glasses button clicked');
+        glassesAdded = true;
+
+        // Affichage du texte en attendant le model de lunettes
+        const canvas = document.querySelector('.overlay');
+        const ctx = canvas.getContext('2d');
+        ctx.font = '30px Arial';
+        ctx.fillStyle = 'red';
+        ctx.fillText('Glasses', 50, 50);
+
+        // TODO: Charger une image de lunettes et la dessiner sur le canvas
+    }
+
+    function addGlassesToCanvas(detections) {
+        detections.forEach(detection => {
+            const { landmarks } = detection;
+            const { positions } = landmarks;
+
+            // Dessiner des lunettes simples comme un exemple
+            // Remplacez ceci par votre propre logique pour dessiner des lunettes
+
+            const leftEye = positions[36];
+            const rightEye = positions[45];
+
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(leftEye.x - 10, leftEye.y);
+            ctx.lineTo(rightEye.x + 10, rightEye.y);
+            ctx.stroke();
+        });
+    }
+
+    function resetView() {
+        console.log('Reset View button clicked');
+        detecting = false; // Arrêter la détection
+        glassesAdded = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Nettoyer le canvas
+        ctx.clear()
+        hideError(); // Cacher le message d'erreur
+    }
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block'; // Afficher le message d'erreur
+    }
+
+    function hideError() {
+        errorMessage.style.display = 'none'; // Cacher le message d'erreur
+    }
+
+    detectFaceButton.addEventListener('click', detectFaces);
+    addGlassesButton.addEventListener('click', addGlasses);
+    resetViewButton.addEventListener('click', resetView);
+
+    // Start the video stream
+    startVideo();
+</script>
+</body>
+</html>
