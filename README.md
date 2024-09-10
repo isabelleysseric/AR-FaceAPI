@@ -12,12 +12,12 @@
 
   <!-- Project Repo -->
   <a href="https://github.com/isabelleysseric/AR-FaceAPI/">
-    <img src="https://img.shields.io/badge/Repo-ProductsApiRestProject-green?style=for-the-badge&logo={ProductsApiRestProject}&logoColor=white" >
+    <img src="https://img.shields.io/badge/Repo-AR_Face_API-green?style=for-the-badge&logo={AR_Face_API}&logoColor=white" >
   </a>
 
   <!-- Wiki Project -->
   <a href="https://github.com/isabelleysseric/AR-FaceAPI/wiki/">
-    <img src="https://img.shields.io/badge/Wiki-ProductsApiRestProject-green?style=for-the-badge&logo={ProductsApiRestProject}&logoColor=white" >
+    <img src="https://img.shields.io/badge/Wiki-AR_Face_API-green?style=for-the-badge&logo={AR_Face_API}&logoColor=white" >
   </a><br>
   
 </h2>
