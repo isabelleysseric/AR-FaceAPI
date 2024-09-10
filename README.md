@@ -1,6 +1,4 @@
-<p align="center">
-  <h1>Augmented Reality Face Detection Application</h1><br>
-</p>
+<h1 align="center">Augmented Reality Face Detection Application</h1>
 <p align="center">
   <img src="https://github.com/isabelleysseric/AR-FaceAPI/blob/master/ar-face-detection.png" alt="User interface image"/>
 </p>  
