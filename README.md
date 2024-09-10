@@ -2,7 +2,7 @@
   <h1>Augmented Reality Face Detection Application<br>
 </p>
 <p align="center">
-  <img src="[https://github.com/isabelleysseric/voice-cloning/blob/main/output/test_model_image.png](https://github.com/isabelleysseric/AR-FaceAPI/blob/master/ar-face-detection.png)" />
+  <img src="https://github.com/isabelleysseric/AR-FaceAPI/blob/master/ar-face-detection.png" alt="User interface image"/>
 </p>  
 
 <p align='center'>
